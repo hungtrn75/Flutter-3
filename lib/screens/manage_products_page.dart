@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_train_3/widgets/main_drawer.dart';
 
 class ManageProductsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Manage Products'),
+      ),
+      drawer: MainDrawer(),
+      body: Container(
+        child: Column(),
+      ),
+    );
   }
 }

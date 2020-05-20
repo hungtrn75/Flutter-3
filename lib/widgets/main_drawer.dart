@@ -68,19 +68,35 @@ class MainDrawer extends StatelessWidget {
             ),
             _buildDrawerItem(
               context,
-              'Meals',
-              Icons.restaurant,
+              'Home',
+              Icons.home,
               () {
-                Navigator.of(context).pushReplacementNamed(RouteName.bottomBar);
+                Navigator.of(context).pushReplacementNamed(RouteName.homePage);
               },
             ),
             _buildDrawerItem(
               context,
-              'Filters',
-              Icons.settings,
+              'Manage',
+              Icons.work,
               () {
                 Navigator.of(context)
-                    .pushReplacementNamed(RouteName.filtersPage);
+                    .pushReplacementNamed(RouteName.manageProducts);
+              },
+            ),
+            _buildDrawerItem(
+              context,
+              'Orders',
+              Icons.shop,
+              () {
+                Navigator.of(context).pushNamed(RouteName.ordersPage);
+              },
+            ),
+            _buildDrawerItem(
+              context,
+              'Products',
+              Icons.settings_input_component,
+              () {
+                Navigator.of(context).pushNamed(RouteName.productsPage);
               },
             ),
           ],
