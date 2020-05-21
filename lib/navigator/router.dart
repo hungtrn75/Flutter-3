@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_train_3/models/product.dart';
 import 'package:flutter_train_3/screens/cart_page.dart';
+import 'package:flutter_train_3/screens/edit_product_page.dart';
 import 'package:flutter_train_3/screens/home_page.dart';
 import 'package:flutter_train_3/screens/manage_products_page.dart';
 import 'package:flutter_train_3/screens/orders_page.dart';
@@ -22,6 +23,10 @@ class Router {
         return MaterialPageRoute(builder: (context) => HomePage());
       case RouteName.cartPage:
         return MaterialPageRoute(builder: (context) => CartPage());
+      case RouteName.editProductPage:
+        final Product product = settings.arguments;
+        return MaterialPageRoute(
+            builder: (context) => EditProductPage(product));
       case RouteName.productDetailPage:
         final Product product = settings.arguments;
         return MaterialPageRoute(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_train_3/models/product.dart';
+import 'package:flutter_train_3/utils/dio.dart';
 
 class Products with ChangeNotifier {
   List<Product> _items = [
@@ -47,8 +49,29 @@ class Products with ChangeNotifier {
     return _isShowOnlyFavorites;
   }
 
-  void addProduct(Product value) {
+  void addProduct(Product value) async {
+    Response<Map> res = await http.post('/products.json', data: {
+      'title': value.title,
+      'price': value.price,
+      'description': value.description,
+      'imageUrl': value.imageUrl,
+      'isFavorite': value.isFavorite,
+    });
+    print(res);
     _items.add(value);
+    notifyListeners();
+  }
+
+  void updateProduct(Product product) {
+    final editProductIndex =
+        _items.indexWhere((element) => element.id == product.id);
+    print(editProductIndex);
+    _items[editProductIndex] = product;
+    notifyListeners();
+  }
+
+  void removeProduct(String productId) {
+    _items.removeWhere((element) => element.id == productId);
     notifyListeners();
   }
 
