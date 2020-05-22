@@ -25,6 +25,7 @@ class _EditProductPageState extends State<EditProductPage> {
   );
   bool hasImg = false;
   bool isInit = true;
+  bool isLoading = false;
 
   //Controller
   final _titleTextController = TextEditingController();
@@ -60,11 +61,14 @@ class _EditProductPageState extends State<EditProductPage> {
     }
   }
 
-  void _saveForm(_) {
+  void _saveForm(_) async {
     final isValid = _formKey.currentState.validate();
     if (!isValid) {
       return;
     }
+    setState(() {
+      isLoading = true;
+    });
     final productsProvider = Provider.of<Products>(context, listen: false);
     final updateProduct = Product(
         id: widget.product != null
@@ -75,10 +79,13 @@ class _EditProductPageState extends State<EditProductPage> {
         price: double.parse(_priceTextController.text),
         imageUrl: _imageTextController.text);
     if (widget.product != null) {
-      productsProvider.updateProduct(updateProduct);
+      await productsProvider.updateProduct(updateProduct);
     } else {
-      productsProvider.addProduct(updateProduct);
+      await productsProvider.addProduct(updateProduct);
     }
+    setState(() {
+      isLoading = false;
+    });
     Navigator.of(context).pop();
   }
 
@@ -97,140 +104,151 @@ class _EditProductPageState extends State<EditProductPage> {
       ),
       body: Container(
         padding: EdgeInsets.all(10),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: <Widget>[
-              TextFormField(
-                controller: _titleTextController,
-                decoration: InputDecoration(labelText: 'Title'),
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_focusPriceNode);
-                },
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Title is required';
-                  }
-                  return null;
-                },
-                onSaved: _saveForm,
-              ),
-              TextFormField(
-                focusNode: _focusPriceNode,
-                controller: _priceTextController,
-                decoration: InputDecoration(labelText: 'Price'),
-                textInputAction: TextInputAction.next,
-                keyboardType: TextInputType.number,
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_descriptionPriceNode);
-                },
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Price is required';
-                  }
-                  if (!validPrice.hasMatch(value)) {
-                    return 'Please enter a valid price';
-                  }
-                  print(true);
-                  return null;
-                },
-              ),
-              TextFormField(
-                focusNode: _descriptionPriceNode,
-                controller: _descriptionTextController,
-                decoration: InputDecoration(labelText: 'Description'),
-                keyboardType: TextInputType.multiline,
-                maxLines: 3,
-                onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_imageFocusNode);
-                },
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Description is required';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(
-                height: 12.5,
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        child: Stack(
+          children: <Widget>[
+            Form(
+              key: _formKey,
+              child: ListView(
                 children: <Widget>[
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        width: 1,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FittedBox(
-                        child: _imageTextController.text.isEmpty
-                            ? Text('Enter a URL')
-                            : Image.network(
-                                _imageTextController.text,
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, e, _) {
-                                  return Text(
-                                    'Submit to preview image',
-                                    style: TextStyle(fontSize: 14),
-                                  );
-                                },
-                              ),
-                      ),
-                    ),
+                  TextFormField(
+                    controller: _titleTextController,
+                    decoration: InputDecoration(labelText: 'Title'),
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_focusPriceNode);
+                    },
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Title is required';
+                      }
+                      return null;
+                    },
+                    onSaved: _saveForm,
+                  ),
+                  TextFormField(
+                    focusNode: _focusPriceNode,
+                    controller: _priceTextController,
+                    decoration: InputDecoration(labelText: 'Price'),
+                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.number,
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context)
+                          .requestFocus(_descriptionPriceNode);
+                    },
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Price is required';
+                      }
+                      if (!validPrice.hasMatch(value)) {
+                        return 'Please enter a valid price';
+                      }
+                      print(true);
+                      return null;
+                    },
+                  ),
+                  TextFormField(
+                    focusNode: _descriptionPriceNode,
+                    controller: _descriptionTextController,
+                    decoration: InputDecoration(labelText: 'Description'),
+                    keyboardType: TextInputType.multiline,
+                    maxLines: 3,
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_imageFocusNode);
+                    },
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Description is required';
+                      }
+                      return null;
+                    },
                   ),
                   SizedBox(
-                    width: 10,
+                    height: 12.5,
                   ),
-                  Expanded(
-                    child: TextFormField(
-                        focusNode: _imageFocusNode,
-                        decoration: InputDecoration(
-                          labelText: 'Image URL',
-                          suffixIcon: _imageTextController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.close),
-                                  color: Colors.grey,
-                                  onPressed: () {
-                                    _imageTextController.clear();
-                                    setState(() {
-                                      hasImg = false;
-                                    });
-                                  },
-                                )
-                              : null,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 1,
+                            color: Theme.of(context).primaryColor,
+                          ),
                         ),
-                        keyboardType: TextInputType.url,
-                        onChanged: (text) {
-                          if (text.isNotEmpty && !hasImg) {
-                            setState(() {
-                              hasImg = true;
-                            });
-                          }
-                        },
-                        validator: (value) {
-                          if (value.isEmpty) {
-                            return 'Image URL is required';
-                          }
-                          if (!validImageurl.hasMatch(value)) {
-                            return 'Please enter a valid URL';
-                          }
-                          return null;
-                        },
-                        controller: _imageTextController,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: _saveForm),
-                  ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: FittedBox(
+                            child: _imageTextController.text.isEmpty
+                                ? Text('Enter a URL')
+                                : Image.network(
+                                    _imageTextController.text,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (ctx, e, _) {
+                                      return Text(
+                                        'Submit to preview image',
+                                        style: TextStyle(fontSize: 14),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                        child: TextFormField(
+                            focusNode: _imageFocusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Image URL',
+                              suffixIcon: _imageTextController.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(Icons.close),
+                                      color: Colors.grey,
+                                      onPressed: () {
+                                        _imageTextController.clear();
+                                        setState(() {
+                                          hasImg = false;
+                                        });
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            keyboardType: TextInputType.url,
+                            onChanged: (text) {
+                              if (text.isNotEmpty && !hasImg) {
+                                setState(() {
+                                  hasImg = true;
+                                });
+                              }
+                            },
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return 'Image URL is required';
+                              }
+                              if (!validImageurl.hasMatch(value)) {
+                                return 'Please enter a valid URL';
+                              }
+                              return null;
+                            },
+                            controller: _imageTextController,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: _saveForm),
+                      ),
+                    ],
+                  )
                 ],
+              ),
+            ),
+            if (isLoading)
+              Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.indigo,
+                ),
               )
-            ],
-          ),
+          ],
         ),
       ),
     );

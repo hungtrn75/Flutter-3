@@ -10,7 +10,7 @@ class CartPage extends StatelessWidget {
     final cartProvider = Provider.of<Cart>(context);
     final cartItemList = cartProvider.items.values.toList();
     final cartItemKeys = cartProvider.items.keys.toList();
-    final addOrder = Provider.of<Orders>(context, listen: false).addOrder;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Cart'),
@@ -50,31 +50,76 @@ class CartPage extends StatelessWidget {
                 },
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                FlatButton(
-                  child: Text(
-                    'Order Now',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                  onPressed: () {
-                    addOrder(cartItemList, totalAmount);
-                    cartProvider.clear();
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            ),
+            if (cartItemList.length > 0) OrderButton(),
             SizedBox(
               height: 20,
             )
           ],
         ),
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  bool _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    final addOrder = Provider.of<Orders>(context, listen: false).addOrder;
+    final totalAmount = Provider.of<Cart>(context).totalAmount;
+    final cartProvider = Provider.of<Cart>(context);
+    final cartItemList = cartProvider.items.values.toList();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[
+        FlatButton(
+          child: _isLoading
+              ? CircularProgressIndicator(
+                  backgroundColor: Theme.of(context).primaryColor,
+                )
+              : Text(
+                  'Order Now',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+          onPressed: () async {
+            try {
+              setState(() {
+                _isLoading = true;
+              });
+              await addOrder(cartItemList, totalAmount);
+              cartProvider.clear();
+
+              Navigator.of(context).pop();
+            } catch (e) {
+              Scaffold.of(context).hideCurrentSnackBar();
+              Scaffold.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    e.toString(),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            } finally {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          },
+        )
+      ],
     );
   }
 }

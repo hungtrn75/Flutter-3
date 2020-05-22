@@ -22,12 +22,16 @@ class ManageProductsPage extends StatelessWidget {
         ],
       ),
       drawer: MainDrawer(),
-      body: Container(
-        padding: EdgeInsets.all(10),
-        child: ListView.builder(
-          itemCount: productProvider.items.length,
-          itemBuilder: (ctx, index) => UserProductItem(
-            product: productProvider.items[index],
+      body: RefreshIndicator(
+        onRefresh: Provider.of<Products>(context).fetchProducts,
+        backgroundColor: Theme.of(context).primaryColor,
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child: ListView.builder(
+            itemCount: productProvider.items.length,
+            itemBuilder: (ctx, index) => UserProductItem(
+              product: productProvider.items[index],
+            ),
           ),
         ),
       ),

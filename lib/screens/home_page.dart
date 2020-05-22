@@ -12,24 +12,20 @@ import 'package:provider/provider.dart';
 
 enum FilterOptions { Favorite, All }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final actions = Provider.of<Products>(context, listen: false);
-    final itemCount = Provider.of<Cart>(context).itemCount;
     return Scaffold(
       appBar: AppBar(
         title: Text('My Shop'),
         actions: <Widget>[
-          Badge(
-            child: IconButton(
-              icon: Icon(Icons.shopping_cart),
-              onPressed: () {
-                Navigator.of(context).pushNamed(RouteName.cartPage);
-              },
-            ),
-            value: itemCount.toString(),
-          ),
+          CartButton(),
           PopupMenuButton(
             onSelected: (FilterOptions selected) {
               print(selected);
@@ -56,11 +52,77 @@ class HomePage extends StatelessWidget {
         ],
       ),
       drawer: MainDrawer(),
-      body: Center(
-        child: Container(
-          child: GridProduct(),
-        ),
+      body: FutureBuilder(
+          future: Provider.of<Products>(context, listen: false).fetchProducts(),
+          builder: (ctx, snapshot) {
+            Widget child;
+            if (snapshot.hasData) {
+              child = GridProduct();
+            } else if (snapshot.hasError) {
+              child = Column(
+                children: <Widget>[
+                  Icon(
+                    Icons.error_outline,
+                    color: Colors.red,
+                    size: 60,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text('Error: ${snapshot.error}'),
+                  )
+                ],
+              );
+            } else {
+              child = Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Theme.of(context).primaryColor,
+                      ),
+                      width: 60,
+                      height: 60,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Text('Awaiting result...'),
+                    )
+                  ],
+                ),
+              );
+            }
+            return child;
+          }),
+      // body: isLoading
+      //     ? Center(
+      //         child: CircularProgressIndicator(
+      //           backgroundColor: Theme.of(context).primaryColor,
+      //         ),
+      //       )
+      //     : GridProduct(),
+    );
+  }
+}
+
+class CartButton extends StatelessWidget {
+  const CartButton({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final itemCount = Provider.of<Cart>(context).itemCount;
+    final scaffold = Scaffold.of(context);
+    return Badge(
+      child: IconButton(
+        icon: Icon(Icons.shopping_cart),
+        onPressed: () {
+          scaffold.hideCurrentSnackBar();
+          Navigator.of(context).pushNamed(RouteName.cartPage);
+        },
       ),
+      value: itemCount.toString(),
     );
   }
 }

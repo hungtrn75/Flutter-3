@@ -10,7 +10,9 @@ class UserProductItem extends StatelessWidget {
   UserProductItem({@required this.product});
   @override
   Widget build(BuildContext context) {
-    final removeProduct = Provider.of<Products>(context).removeProduct;
+    final removeProduct =
+        Provider.of<Products>(context, listen: false).removeProduct;
+    final scaffold = Scaffold.of(context);
     return Card(
       child: ListTile(
         leading: CircleAvatar(
@@ -46,8 +48,19 @@ class UserProductItem extends StatelessWidget {
                           ),
                           FlatButton(
                             child: Text('Yes'),
-                            onPressed: () {
-                              removeProduct(product.id);
+                            onPressed: () async {
+                              removeProduct(product.id).catchError((e) {
+                                scaffold.hideCurrentSnackBar();
+                                scaffold.showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      e.toString(),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                );
+                              });
+
                               Navigator.of(context).pop();
                             },
                           ),
