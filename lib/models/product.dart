@@ -20,15 +20,11 @@ class Product with ChangeNotifier {
     this.isFavorite,
   });
 
-  Future<void> toggleFavoriteStatus() async {
+  Future<void> toggleFavoriteStatus(String userToken, String userId) async {
     try {
       isFavorite = !isFavorite;
       notifyListeners();
-      await http.patch('/products/$id.json', data: {
-        'title': title,
-        'price': price,
-        'description': description,
-        'imageUrl': imageUrl,
+      await http.post('/favorites/$userId/$id.json?auth=$userToken', data: {
         'isFavorite': isFavorite,
       });
     } catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter_train_3/models/product.dart';
 import 'package:flutter_train_3/navigator/route_name.dart';
+import 'package:flutter_train_3/providers/auth.dart';
 import 'package:flutter_train_3/providers/cart.dart';
 import 'package:flutter_train_3/providers/products.dart';
 import 'package:flutter_train_3/widgets/badge.dart';
@@ -60,6 +61,7 @@ class _HomePageState extends State<HomePage> {
               child = GridProduct();
             } else if (snapshot.hasError) {
               child = Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Icon(
                     Icons.error_outline,
@@ -67,8 +69,14 @@ class _HomePageState extends State<HomePage> {
                     size: 60,
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text('Error: ${snapshot.error}'),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 40,
+                    ),
+                    child: Text(
+                      'Error: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
                   )
                 ],
               );

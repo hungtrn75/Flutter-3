@@ -12,62 +12,100 @@ class OrderListItem extends StatefulWidget {
   _OrderListItemState createState() => _OrderListItemState();
 }
 
-class _OrderListItemState extends State<OrderListItem> {
+class _OrderListItemState extends State<OrderListItem>
+    with SingleTickerProviderStateMixin {
+  AnimationController _animation;
+  Animation<double> rotate;
   bool _expanded = false;
   @override
+  void initState() {
+    _animation = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    rotate = Tween<double>(begin: 0, end: 0.5).animate(_animation);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animation.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            leading: CircleAvatar(
-              child: Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: FittedBox(
-                  child: Text('\$${widget.order.amount}'),
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      height: _expanded
+          ? min(125, widget.order.products.length * 25.0 + 25) + 64.0
+          : 65,
+      child: Card(
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              leading: CircleAvatar(
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: FittedBox(
+                    child: Text('\$${widget.order.amount}'),
+                  ),
                 ),
               ),
-            ),
-            title: Text(
-              DateFormat('dd/MM/yyyy hh:mm:ss').format(widget.order.date),
-            ),
-            trailing: IconButton(
-                icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                onPressed: () {
-                  setState(() {
-                    _expanded = !_expanded;
-                  });
-                }),
-          ),
-          if (_expanded)
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 15,
-                vertical: 10,
+              title: Text(
+                DateFormat('dd/MM/yyyy hh:mm:ss').format(widget.order.date),
               ),
-              child: ListView(
-                children: widget.order.products
-                    .map(
-                      (e) => Container(
-                        height: 25,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              e.title,
-                              style: Theme.of(context).textTheme.subtitle1,
-                            ),
-                            Text('${e.quantity} x \$${e.price}')
-                          ],
+              trailing: RotationTransition(
+                turns: rotate,
+                child: IconButton(
+                    icon: Icon(Icons.expand_less),
+                    onPressed: () {
+                      setState(() {
+                        _expanded = !_expanded;
+                      });
+                      if (_expanded) {
+                        _animation.forward();
+                      } else {
+                        _animation.reverse();
+                      }
+                    }),
+              ),
+            ),
+            AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              height: _expanded
+                  ? min(125, widget.order.products.length * 25.0 + 25)
+                  : 0,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 10,
+                ),
+                child: ListView(
+                  children: widget.order.products
+                      .map(
+                        (e) => Container(
+                          height: 25,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                e.title,
+                                style: Theme.of(context).textTheme.subtitle1,
+                              ),
+                              Text('${e.quantity} x \$${e.price}')
+                            ],
+                          ),
                         ),
-                      ),
-                    )
-                    .toList(),
+                      )
+                      .toList(),
+                ),
+                height: min(125, widget.order.products.length * 25.0 + 25),
+                width: double.infinity,
               ),
-              height: min(125, widget.order.products.length * 25.0 + 25),
-              width: double.infinity,
             )
-        ],
+          ],
+        ),
       ),
     );
   }

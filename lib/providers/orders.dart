@@ -19,8 +19,11 @@ class OrderItem {
 }
 
 class Orders with ChangeNotifier {
+  String userToken;
   bool isLoading = false;
   List<OrderItem> _orderItems = [];
+
+  Orders({this.userToken});
 
   List<OrderItem> get orders {
     return [..._orderItems];
@@ -29,7 +32,7 @@ class Orders with ChangeNotifier {
   Future<void> fetchOrders() async {
     try {
       isLoading = true;
-      final res = await http.get('/orders.json');
+      final res = await http.get('/orders.json?auth=$userToken');
       final map = json.decode(res.toString()) as Map<String, dynamic>;
       if (map != null) {
         List<OrderItem> _addOrderItems = [];
@@ -68,7 +71,7 @@ class Orders with ChangeNotifier {
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     try {
-      final res = await http.post('/orders.json', data: {
+      final res = await http.post('/orders.json?auth=$userToken', data: {
         'amount': total,
         'date': DateTime.now().toIso8601String(),
         'products': cartProducts

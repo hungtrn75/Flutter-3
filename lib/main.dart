@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_train_3/providers/auth.dart';
 import 'package:flutter_train_3/providers/cart.dart';
 import 'package:flutter_train_3/providers/orders.dart';
 import 'package:flutter_train_3/providers/products.dart';
@@ -12,13 +13,23 @@ void main() => runApp(
         child: MyApp(),
         providers: [
           ChangeNotifierProvider.value(
-            value: Products(),
+            value: Auth(),
+          ),
+          ChangeNotifierProxyProvider<Auth, Products>(
+            create: (_) => Products(),
+            update: (_, auth, prevProducts) => Products(
+              userToken: auth.userToken,
+              getRefreshToken: auth.getRefreshToken,
+            ),
+          ),
+          ChangeNotifierProxyProvider<Auth, Orders>(
+            create: (_) => Orders(),
+            update: (_, auth, prevProducts) => Orders(
+              userToken: auth.userToken,
+            ),
           ),
           ChangeNotifierProvider.value(
             value: Cart(),
-          ),
-          ChangeNotifierProvider.value(
-            value: Orders(),
           ),
         ],
       ),
@@ -44,7 +55,7 @@ class MyApp extends StatelessWidget {
                   fontWeight: FontWeight.w700),
             ),
       ),
-      initialRoute: RouteName.homePage,
+      initialRoute: RouteName.authPage,
       onGenerateRoute: Router.generateRoute,
     );
   }

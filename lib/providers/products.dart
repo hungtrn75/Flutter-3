@@ -7,10 +7,14 @@ import 'package:flutter_train_3/models/product.dart';
 import 'package:flutter_train_3/utils/dio.dart';
 
 class Products with ChangeNotifier {
+  String userToken;
+  Function getRefreshToken;
   bool isLoading = false;
   List<Product> _items = [];
 
   bool _isShowOnlyFavorites = false;
+
+  Products({this.userToken, this.getRefreshToken});
 
   List<Product> get items {
     return [..._items];
@@ -22,7 +26,7 @@ class Products with ChangeNotifier {
 
   Future<dynamic> fetchProducts() async {
     try {
-      final res = await http.get('/products.json');
+      final res = await http.get('/products.json?auth=$userToken');
       final map = json.decode(res.toString()) as Map<String, dynamic>;
       List<Product> _importProducts = [];
       if (map != null) {
@@ -41,17 +45,30 @@ class Products with ChangeNotifier {
       }
 
       _items = _importProducts;
-      notifyListeners();
-      print(_importProducts);
+
       return Future.value(_importProducts);
     } catch (e) {
-      throw e;
-    } finally {}
+      if (e.response != null) {
+        print(e.response.data);
+        print(e.response.headers);
+        print(e.response.request.toString());
+        final String error = e.response.data.toString();
+        // if (error.contains('Auth token is expired')) {
+        //   await getRefreshToken();
+        //   await fetchProducts();
+        // }
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        print("MESSAGE:" + e.message);
+      }
+    } finally {
+      notifyListeners();
+    }
   }
 
   Future<void> addProduct(Product value) async {
     try {
-      Response res = await http.post('/products.json', data: {
+      Response res = await http.post('/products.json?auth=$userToken', data: {
         'title': value.title,
         'price': value.price,
         'description': value.description,
@@ -77,7 +94,8 @@ class Products with ChangeNotifier {
 
   Future<void> updateProduct(Product product) async {
     try {
-      final res = await http.patch('/products/${product.id}.json', data: {
+      final res = await http
+          .patch('/products/${product.id}.json?auth=$userToken', data: {
         'title': product.title,
         'price': product.price,
         'description': product.description,
@@ -104,7 +122,7 @@ class Products with ChangeNotifier {
     try {
       _items.removeWhere((element) => element.id == productId);
       notifyListeners();
-      await http.delete('/products/$productId.json');
+      await http.delete('/products/$productId.json?auth=$userToken');
     } catch (e) {
       _items.insert(_deleteIndex, _deleteProduct);
       notifyListeners();

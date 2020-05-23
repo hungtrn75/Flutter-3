@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_train_3/providers/auth.dart';
+import 'package:provider/provider.dart';
 import '../navigator/route_name.dart';
 
 class MainDrawer extends StatelessWidget {
@@ -27,6 +29,7 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAuth = Provider.of<Auth>(context).isAuth;
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -88,7 +91,8 @@ class MainDrawer extends StatelessWidget {
               'Orders',
               Icons.shop,
               () {
-                Navigator.of(context).pushNamed(RouteName.ordersPage);
+                Navigator.of(context)
+                    .pushReplacementNamed(RouteName.ordersPage);
               },
             ),
             _buildDrawerItem(
@@ -96,9 +100,20 @@ class MainDrawer extends StatelessWidget {
               'Products',
               Icons.settings_input_component,
               () {
-                Navigator.of(context).pushNamed(RouteName.productsPage);
+                Navigator.of(context)
+                    .pushReplacementNamed(RouteName.productsPage);
               },
             ),
+            if (isAuth)
+              _buildDrawerItem(
+                context,
+                'Logout',
+                Icons.exit_to_app,
+                () {
+                  Navigator.of(context)
+                      .pushReplacementNamed(RouteName.authPage);
+                },
+              ),
           ],
         ),
       ),

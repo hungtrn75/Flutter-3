@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_train_3/models/product.dart';
 import 'package:flutter_train_3/navigator/route_name.dart';
+import 'package:flutter_train_3/providers/auth.dart';
 import 'package:flutter_train_3/providers/cart.dart';
+import 'package:flutter_train_3/providers/products.dart';
 import 'package:provider/provider.dart';
 
 class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: true);
+    final authProvider = Provider.of<Auth>(context);
     final cartProvider = Provider.of<Cart>(context);
     final scaffold = Scaffold.of(context);
     return ClipRRect(
@@ -18,9 +21,15 @@ class ProductItem extends StatelessWidget {
             Navigator.of(context)
                 .pushNamed(RouteName.productDetailPage, arguments: product);
           },
-          child: Image.network(
-            product.imageUrl,
-            fit: BoxFit.cover,
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              image: NetworkImage(product.imageUrl),
+              fit: BoxFit.cover,
+              placeholder: AssetImage(
+                'assets/images/placeholder.png',
+              ),
+            ),
           ),
         ),
         footer: GridTileBar(
@@ -29,7 +38,10 @@ class ProductItem extends StatelessWidget {
               color: product.isFavorite ? Colors.pink : Colors.white,
               icon: Icon(Icons.favorite),
               onPressed: () {
-                product.toggleFavoriteStatus().catchError((e) {
+                product
+                    .toggleFavoriteStatus(
+                        authProvider.userToken, authProvider.userId)
+                    .catchError((e) {
                   scaffold.hideCurrentSnackBar();
                   scaffold.showSnackBar(
                     SnackBar(
